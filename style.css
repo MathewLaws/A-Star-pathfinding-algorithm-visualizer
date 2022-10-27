@@ -1,0 +1,16 @@
+body {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    background-color: darkcyan;
+}
+
+#table {
+    background-color: #CCC;
+    width: 80vmin;
+    height: 80vmin;
+    border: 2px solid black;
+}
