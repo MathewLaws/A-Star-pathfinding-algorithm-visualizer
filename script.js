@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return 1
             }
 
-            // remove current from open set
             for (let i=openSet.length-1; i >= 0; i--) {
                 if (openSet[i] == current) {
                     openSet.splice(i, 1)
@@ -95,8 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return -1
     }
 
-    W = ctx.canvas.width / size;
-    H = ctx.canvas.height / size;
+    let W = ctx.canvas.width / size;
+    let H = ctx.canvas.height / size;
 
     function Cell(x, y) {
         this.x = x
@@ -129,12 +128,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (this.closed) {
                 ctx.fillStyle = '#808080';
                 ctx.fillRect(this.x*W, this.y*H, W, H);
-            }
-            else if (this.open) {
+            } else if (this.open) {
                 ctx.fillStyle = '#FFA500';
                 ctx.fillRect(this.x*W, this.y*H, W, H);
-            }
-            else {
+            } else {
                 ctx.rect(this.x*W, this.y*H, W, H);
                 ctx.stroke()
             }
@@ -263,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     })
 
-    document.getElementById("clear-btn").addEventListener("click", () => {
+    function clear_board() {
         for (let i=0; i < grid.length; i++) {
             for (let j=0; j < grid[i].length; j++) {
                 grid[i][j] = new Cell(grid[i][j].x, grid[i][j].y)
@@ -271,6 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 end = false
             }
         }
+    }
+
+    document.getElementById("clear-btn").addEventListener("click", () => {
+        clear_board()
     })
 
     let speed_options = document.querySelectorAll(".speed-option")
@@ -321,6 +322,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         })
+    })
+
+    let size_btn = document.querySelector("#size-btn")
+    
+    size_btn.addEventListener("click", () => {
+        let size_input = document.querySelector("#size-input").value
+
+        if (size_input > 1) {
+
+            grid = []
+
+            size = size_input
+
+            for (let i=0; i < size; i++) {
+                grid[i] = []
+                for (let j=0; j < size; j++) {
+                    grid[i][j] = new Cell(j, i);
+                }
+            }
+
+            start = false
+            end = false
+
+            W = ctx.canvas.width / size;
+            H = ctx.canvas.height / size;
+        }
     })
 
     let lastRenderTime = 0

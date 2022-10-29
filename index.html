@@ -12,6 +12,15 @@
     <header class="navbar bg-dark d-flex justify-content-center mb-4">
         <button id="start-btn" type="button" class="btn btn-primary btn-lg">Visualize!</button>
     </header>
+    <div class="legend-container">
+        <div class="legend-child"><div class="colour" style="background: #00FF00;"></div><p>Start Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #FF0000;"></div><p>End Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #FFF;"></div><p>Unvisited Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #000000;"></div><p>Barrier Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #FFA500;"></div><p>Open Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #808080;"></div><p>Closed Node</p></div>
+        <div class="legend-child"><div class="colour" style="background: #A020F0;"></div><p>Path Node</p></div>
+    </div>
     <div class="d-flex justify-content-around align-items-center">
         <div class="list-group">
             <div class="list-group-item dropdown">
@@ -29,6 +38,14 @@
                 <ul class="dropdown-menu pattern-options">
                   <li><a class="dropdown-item" href="#" id="r">Linear Random</a></li>
                 </ul>
+            </div>
+            <div class="list-group-item">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="size-btn">Apply</button>
+                    </div>
+                    <input type="number" class="form-control" placeholder="Size of Table" aria-label="" aria-describedby="basic-addon1" id="size-input">
+                </div>
             </div>
         </div>
         <canvas id="table" oncontextmenu="return false" style="width: 80vmin; height: 80vmin; border: 2px solid black;">Your browser does not support the canvas element.</canvas>
