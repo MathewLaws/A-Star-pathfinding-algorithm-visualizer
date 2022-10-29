@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let cols = 20
-    let rows = 20
+    let size = 30
+    let allow_corners_input = document.getElementById("allow-corners")
+    let allow_corners = allow_corners_input.checked
+    let speed = 30
     let table = document.getElementById("table");
     table.width = table.getBoundingClientRect().width;
     table.height = table.getBoundingClientRect().height;
@@ -11,19 +13,33 @@ document.addEventListener("DOMContentLoaded", () => {
         return node.hScore
     }
 
+    function reveal_path(path) {
+        let i = path.length-1;
+
+        (function nextIter() {
+            if (i < 0) return
+
+            path[i].path = true
+            i -= 1
+            setTimeout(nextIter, speed)
+        })();
+    }
+
     // f(n) = g(n) + h(n)
     function A_Star(start, goal) {
-        let openSet = [start]
-        let closedSet = []
-        let current = start
-        let temp_current = 0
-        let min
-        
-        start.g_score = 0
-        start.h_score = heuristic(start, goal)
-        start.f_score = start.g_score + start.h_score
+        let openSet = [start];
+        let closedSet = [];
+        let current = start;
+        let temp_current = 0;
+        let min;
 
-        while (openSet) {
+        allow_corners = allow_corners_input.checked;
+        
+        start.g_score = 0;
+        start.h_score = heuristic(start, goal);
+        start.f_score = start.g_score + start.h_score;
+
+        (function nextIter() {
             min = Number.POSITIVE_INFINITY
             temp_current = 0
             for (let i = 0; i < openSet.length; i++) {
@@ -45,14 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     current = current.previous
                 }
 
-                let index = path.length-1
-                const reveal_path = setInterval(() => {
-                    if (index <= 0) {
-                        clearInterval(reveal_path)
-                    }
-                    path[index].path = true
-                    index--
-                }, 100)
+                reveal_path(path)
                 
                 console.log("Done")
                 return 1
@@ -79,13 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (!(neighbor.previous)) neighbor.previous = current
                 }
             })
-        }
+            if (speed > 0) setTimeout(nextIter, speed)
+            else nextIter()
+        })();
 
         return -1
     }
 
-    W = ctx.canvas.width / cols;
-    H = ctx.canvas.height / rows;
+    W = ctx.canvas.width / size;
+    H = ctx.canvas.height / size;
 
     function Cell(x, y) {
         this.x = x
@@ -128,20 +139,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.stroke()
             }
         }
-
+        // need to change row and col operations to variables and not fixed numbers
         this.getNeighbors = () => {
             this.neighbors = []
-            
-            for (let i=this.y-1; i < this.y+2; i++) {
-                if (i <= -1 || i > 19) {
-                    continue
-                }
-                for (let j=this.x-1; j < this.x+2; j++) {
-                    if (j <= -1 || j > 19) {
+
+            if (allow_corners) {
+                for (let i=this.y-1; i < this.y+2; i++) {
+                    if (i <= -1 || i > size-1) {
                         continue
                     }
-                    if (grid[i][j] != this) {
-                        this.neighbors.push(grid[i][j])
+                    for (let j=this.x-1; j < this.x+2; j++) {
+                        if (j <= -1 || j > size-1) {
+                            continue
+                        }
+                        if (grid[i][j] != this) {
+                            this.neighbors.push(grid[i][j])
+                        }
+                    }
+                }
+            } else {
+                for (let i=-1; i < 2; i+=2) {
+                    if (this.x + i > -1 && this.x + i <= size-1) {
+                        this.neighbors.push(grid[this.y][this.x + i])
+                    }
+                    if (this.y + i > -1 && this.y + i <= size-1) {
+                        this.neighbors.push(grid[this.y + i][this.x])
                     }
                 }
             }
@@ -151,6 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function get_pos(x, y) {
+        let rect = table.getBoundingClientRect()
+        x = x - rect.left
+        y = y - rect.top
         let i = Math.floor(x/W)
         let j = Math.floor(y/H)
         let spot = grid[j][i]
@@ -159,50 +184,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let start = false
     let end = false
-    //let hold = false
+    let hold_right = false
+    let hold_left = false
+    let spot = undefined
 
     table.addEventListener("mousedown", (x) => {
-        let spot = get_pos(x.offsetX, x.offsetY)
-        if (x.button == 0) {
-            if (!spot.start && !spot.end && !start) {
-                spot.start = true
-                start = spot
-            }
-            else if (!spot.end && !spot.start && !end) {
-                spot.end = true
-                end = spot
-            }
-            else if (!spot.start && !spot.end && start && end) {
-                spot.barrier = true
-            }
+        if (x.button == 0) hold_right = true
+        else if (x.button == 2) hold_left = true
+        pos = {
+            "x": x.x, 
+            "y": x.y
         }
-        else if (x.button == 2) {
-            if (spot.start) {
-                spot.start = false
-                start = false
-            }
-            else if (spot.end) {
-                spot.end = false
-                end = false
-            }
-            else {
-                spot.barrier = false
-            }
-        }
+        colour_square(pos)
     })
+
+    document.addEventListener("mouseup", () => {hold_right = false; hold_left = false})
+
+    function colour_square(pos) {
+        if (hold_right || hold_left) {
+            spot = get_pos(pos.x, pos.y)
+            if (hold_right) {
+                if (!spot.start && !spot.end && !start) {
+                    spot.start = true
+                    start = spot
+                }
+                else if (!spot.end && !spot.start && !end) {
+                    spot.end = true
+                    end = spot
+                }
+                else if (!spot.start && !spot.end && start && end) {
+                    spot.barrier = true
+                }
+            }
+            else if (hold_left) {
+                if (spot.start) {
+                    spot.start = false
+                    start = false
+                }
+                else if (spot.end) {
+                    spot.end = false
+                    end = false
+                }
+                else {
+                    spot.barrier = false
+                }
+            }
+        }
+    }
+
+    table.addEventListener("mousemove", (pos) => colour_square(pos))
 
     grid = [];
 
-    for (let i=0; i < cols; i++) {
+    for (let i=0; i < size; i++) {
         grid[i] = []
-        for (let j=0; j < rows; j++) {
+        for (let j=0; j < size; j++) {
             grid[i][j] = new Cell(j, i);
         }
     }
 
     function update() {
-        for (let i=0; i < cols; i++) {
-            for (let j=0; j < rows; j++) {
+        for (let i=0; i < size; i++) {
+            for (let j=0; j < size; j++) {
                 grid[i][j].show()
             }
         }
@@ -218,6 +261,66 @@ document.addEventListener("DOMContentLoaded", () => {
         if (start && end) {
             A_Star(start, end)
         }
+    })
+
+    document.getElementById("clear-btn").addEventListener("click", () => {
+        for (let i=0; i < grid.length; i++) {
+            for (let j=0; j < grid[i].length; j++) {
+                grid[i][j] = new Cell(grid[i][j].x, grid[i][j].y)
+                start = false
+                end = false
+            }
+        }
+    })
+
+    let speed_options = document.querySelectorAll(".speed-option")
+
+    speed_options.forEach(option => {
+        option.addEventListener("click", (x) => {
+            switch(x.target.id) {
+                case 's': {
+                    speed = 100
+                    break
+                }
+                case 'm': {
+                    speed = 30
+                    break
+                }
+                case 'f': {
+                    speed = 10
+                    break
+                }
+                case 'i': {
+                    speed = 0
+                    break
+                }
+            }
+        })
+    })
+
+    function generate_random_maze() {
+        for (let i=0; i < grid.length; i++) {
+            for (let j=0; j < grid[i].length; j++) {
+                s = grid[i][j]
+                if (s.start || s.end) {
+                    continue
+                }
+                Math.floor(Math.random()*3) == 2 ? s.barrier = true : null
+            }
+        }
+    }
+
+    let pattern_options = document.querySelectorAll(".pattern-options")
+
+    pattern_options.forEach(option => {
+        option.addEventListener("click", (x) => {
+            switch(x.target.id) {
+                case 'r': {
+                    generate_random_maze()
+                    break
+                }
+            }
+        })
     })
 
     let lastRenderTime = 0

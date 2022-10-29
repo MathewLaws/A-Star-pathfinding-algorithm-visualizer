@@ -20,22 +20,21 @@
                 </button>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="#">A Star</a></li>
-                  <li><a class="dropdown-item" href="#">Dykstraz</a></li>
                 </ul>
             </div>
             <div class="list-group-item dropdown">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Mazes
+                    Mazes & Patterns
                 </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Action</a></li>
+                <ul class="dropdown-menu pattern-options">
+                  <li><a class="dropdown-item" href="#" id="r">Linear Random</a></li>
                 </ul>
             </div>
         </div>
         <canvas id="table" oncontextmenu="return false" style="width: 80vmin; height: 80vmin; border: 2px solid black;">Your browser does not support the canvas element.</canvas>
         <div class="list-group">
             <div class="list-group-item">
-                <button class="btn btn-primary" type="button">
+                <button class="btn btn-primary" type="button" id="clear-btn">
                     Clear Board
                 </button>
             </div>
@@ -44,10 +43,15 @@
                     Speed
                 </button>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Slow</a></li>
-                  <li><a class="dropdown-item" href="#">Moderate</a></li>
-                  <li><a class="dropdown-item" href="#">Fast</a></li>
+                  <li><a class="dropdown-item speed-option" id="s" href="#">Slow</a></li>
+                  <li><a class="dropdown-item speed-option" id="m" href="#">Moderate</a></li>
+                  <li><a class="dropdown-item speed-option" id="f" href="#">Fast</a></li>
+                  <li><a class="dropdown-item speed-option" id="i" href="#">Instant</a></li>
                 </ul>
+            </div>
+            <div class="list-group-item">
+                <input class="form-check-input me-1" type="checkbox" value="" id="allow-corners">
+                <label class="form-check-label" for="firstCheckbox">Allow Corners</label>
             </div>
         </div>
     </div>
