@@ -6,16 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     table.height = table.getBoundingClientRect().height;
     let ctx = table.getContext("2d")
 
-
-    function reconstruct_path(cameFrom, current) {
-        let total_path = {current}
-        while (current in cameFrom.Keys) {
-            let current = cameFrom[current]
-            total_path.prepend(current)
-        }
-        return total_path
-    }
-
     function heuristic(node, goal) {
         node.hScore = (Math.abs(goal.x - node.x) + Math.abs(goal.y - node.y))
         return node.hScore
@@ -25,15 +15,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function A_Star(start, goal) {
         let openSet = [start]
         let closedSet = []
-        let cameFrom = []
+        let current = start
+        let temp_current = 0
+        let min
         
         start.g_score = 0
         start.h_score = heuristic(start, goal)
         start.f_score = start.g_score + start.h_score
 
         while (openSet) {
-            let min = Number.POSITIVE_INFINITY
-            let temp_current
+            min = Number.POSITIVE_INFINITY
+            temp_current = 0
             for (let i = 0; i < openSet.length; i++) {
                 if (openSet[i].f_score < min && openSet[i].closed == false) {
                     temp_current = openSet[i]
@@ -45,7 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
             current.open = true
 
             if (current === goal) {
-                //return reconstruct_path(cameFrom, current)
+                
+                let path = []
+                path.push(current)
+                while (current.previous && !(current === start)) {
+                    path.push(current.previous)
+                    current = current.previous
+                }
+
+                let index = path.length-1
+                const reveal_path = setInterval(() => {
+                    if (index <= 0) {
+                        clearInterval(reveal_path)
+                    }
+                    path[index].path = true
+                    index--
+                }, 100)
+                
                 console.log("Done")
                 return 1
             }
@@ -68,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!(neighbor in openSet) && !(neighbor in closedSet) && (neighbor.barrier == false)) {
                         openSet.push(neighbor)
                         neighbor.open = true
+                        if (!(neighbor.previous)) neighbor.previous = current
                 }
             })
         }
@@ -84,8 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
         this.g_score = Number.POSITIVE_INFINITY
         this.h_score = Number.POSITIVE_INFINITY
         this.f_score = Number.POSITIVE_INFINITY
+        this.previous = undefined
         this.closed = false
         this.open = false
+        this.path = false
         this.barrier = false
         this.start = false
         this.end = false
@@ -100,6 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.fillRect(this.x*W, this.y*H, W, H);
             } else if (this.end) {
                 ctx.fillStyle = '#FF0000';
+                ctx.fillRect(this.x*W, this.y*H, W, H);
+            } else if (this.path) {
+                ctx.fillStyle = '#A020F0';
                 ctx.fillRect(this.x*W, this.y*H, W, H);
             } else if (this.closed) {
                 ctx.fillStyle = '#808080';
@@ -145,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let start = false
     let end = false
-    let hold = false
+    //let hold = false
 
     table.addEventListener("mousedown", (x) => {
         let spot = get_pos(x.offsetX, x.offsetY)
@@ -196,6 +210,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener("keypress", x => {
         if (x.code == "Space" && start && end) {
+            A_Star(start, end)
+        }
+    })
+
+    document.getElementById("start-btn").addEventListener("click", function() {
+        if (start && end) {
             A_Star(start, end)
         }
     })
