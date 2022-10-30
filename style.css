@@ -1,0 +1,111 @@
+.colour {
+    height: 75%;
+    aspect-ratio: 1/1;
+    border: 1px solid black;
+}
+
+.legend-container {
+    display: grid;
+    max-width: 80vw;
+    margin: 0 auto;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-bottom: 10px;
+
+}
+
+.legend-child {
+    display: flex;
+    padding: .5rem;
+}
+
+.legend-child p {
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+#table {
+    height: 80vmin;
+    border-spacing: 0;
+    aspect-ratio: 1/1;
+}
+
+table td, table{
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+td {
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+td.barrier{
+    animation-name: barrier;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+}
+
+td.start{
+    animation-name: start;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+td.end{
+    animation-name: end;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+td.open{
+    animation-name: open;
+    animation-duration: 1.0s;
+    animation-fill-mode: forwards;
+}
+
+td.closed{
+    animation-name: closed;
+    animation-duration: 1.0s;
+    animation-fill-mode: forwards;
+}
+
+td.path{
+    animation-name: path;
+    animation-duration: 1.0s;
+    animation-fill-mode: forwards;
+}
+/* change colors, add linear gradients for all colours in the legend*/
+@keyframes barrier{
+    0% {background-color: #a3a3a3; transform: scale(.5);}
+    50% {background-color: #696969}
+    100% {background-color: #333333; transform: scale(1.0)}
+}
+@keyframes open{
+    0% {background-color: #5c5eb8; transform: scale(.5)}
+    50% {background-color: #387dd8}
+    100% {background-color: #1537b4; transform: scale(1.0);}
+}
+
+@keyframes closed{
+    0% {background-color: #ffd27f; transform: scale(.5);}
+    50% {background-color: #ffbb3f}
+    100% {background-color: #ffa500; transform: scale(1.0);}
+
+}
+@keyframes start{
+    0% {background-color: #86ed86; transform: scale(.5)}
+    50% {background-color: #4ae44a}
+    100% {background-color: #1ecc1e; transform: scale(1.0)}
+}
+@keyframes end{
+    0% {background-color: #ff7f7f; transform: scale(.5);}
+    50% {background-color: #ff3f3f}
+    100% {background-color: #ff0000; transform: scale(1.0);}
+}
+
+@keyframes path{
+    0% {background-color: #cf8ff7; transform: scale(.5)}
+    50% {background-color: #b757f3}
+    100% {background-color: #A020F0; transform: scale(1.0)}
+}
