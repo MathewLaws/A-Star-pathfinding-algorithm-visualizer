@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let allow_corners = allow_corners_input.checked
     let speed = 30
     let table = document.getElementById("table");
+    let inProcess = false;
 
     function heuristic(node, goal) {
         node_id = row_col(node.cell)
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         (function nextIter() {
             if (i < 0) return
+            if (i >= 1 && i < path.length-1)
             path[i].cell.classList.add("path")
             path[i].cell.classList.remove("open")
             path[i].cell.classList.remove("closed")
@@ -40,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // f(n) = g(n) + h(n)
     function A_Star(start, goal) {
+        inProcess = true
         let openSet = [start];
         let closedSet = [];
         let current = openSet[0];
@@ -69,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 let path = []
                 path.push(current)
-                while (current.previous && !(current.cell === start.cell)) {
+                while (current.previous && current != start) {
                     path.push(current.previous)
                     current = current.previous
                 }
@@ -77,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 reveal_path(path)
                 
                 console.log("Done")
+                inProcess = false
                 return 1
             }
 
@@ -124,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let chosen;
         let x_y;
         let x_y2;
+        inProcess = true
         for (let i=0; i < size; i++) {
             for (let j=0; j < size; j++) {
                 if (j % 2 == 0 || i % 2 == 0) {
@@ -138,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
             neighbors = getNeighbors(c.cell, true, valid_maze)
             valid_neighbors = []
             for (let i=0; i < neighbors.length; i++) {
-                if (!(neighbors[i].visited) && !(neighbors[i].cell == rand.cell)) {
+                if (!(neighbors[i].visited) && neighbors[i] != rand) {
                     valid_neighbors.push(neighbors[i])
                 }
             }
@@ -149,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 c = chosen
             }
 
-            if (c.cell == rand.cell) return
+            if (c.cell == rand.cell) {inProcess = false; return }
 
             if (valid_neighbors.length == 0) {
                 setTimeout(function() {nextIter(c.previous2)}, 0)
@@ -180,7 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
             for (let i=-1; i < 2; i++) {
                 for (let j=-1; j < +2; j++) {
                     if (cell_y + j > -1 && cell_y + j <= size-1 && cell_x + i > -1 && cell_x + i <= size-1) {
-                        //neighbors.push(Cell(document.getElementById(`${cell_x + j}-${cell_y + i}`)))
                         neighbors.push(grid[cell_x+i][cell_y+j])
                     }
                 }
@@ -188,11 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (!(allow_corners)){
             for (let i=-1; i < 2; i+=2) {
                 if (cell_y + i > -1 && cell_y + i <= size-1) {
-                    //neighbors.push(Cell(document.getElementById(`${cell_x}-${cell_y+i}`)))
                     neighbors.push(grid[cell_x][cell_y+i])
                 }
                 if (cell_x + i > -1 && cell_x + i <= size-1) {
-                    //neighbors.push(Cell(document.getElementById(`${cell_x+i}-${cell_y}`)))
                     neighbors.push(grid[cell_x+i][cell_y])
                 }
             }
@@ -208,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let spot = undefined
 
     table.addEventListener("mousedown", (x) => {
+        if (inProcess) return
         if (x.button == 0) hold_right = true
         else if (x.button == 2) hold_left = true
         colour_square(x)
@@ -217,38 +220,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function colour_square(x) {
         if (hold_right || hold_left) {
-            spot = x.target
-            if (spot.id === "table") return
+            if (x.target.id === "table") return
+            let x_y = row_col(x.target)
+            spot = grid[x_y[0]][x_y[1]]
             if (hold_right) {
-                if (!(spot == start) && !(spot == end) && !start) {
-                    spot.classList.add("start")
+                if (spot != end&& !(spot.cell.classList.contains("barrier")) && !start) {
+                    spot.cell.classList.add("start")
                     start = spot
                 }
-                else if (!(spot == start) && !(spot == end) && !end) {
-                    spot.classList.add("end")
+                else if (spot != start && !(spot.cell.classList.contains("barrier")) && !end) {
+                    spot.cell.classList.add("end")
                     end = spot
                 }
-                else if (!(spot == start) && !(spot == end) && start && end) {
-                    spot.classList.add("barrier")
+                else if (spot != start && spot != end && start && end) {
+                    spot.cell.classList.add("barrier")
                 }
             }
             else if (hold_left) {
                 if (spot == start) {
-                    spot.classList.remove("start")
+                    spot.cell.classList.remove("start")
                     start = false
                 }
                 else if (spot == end) {
-                    spot.classList.remove("end")
+                    spot.cell.classList.remove("end")
                     end = false
                 }
                 else {
-                    spot.classList.remove("barrier")
+                    spot.cell.classList.remove("barrier")
                 }
             }
         }
     }
 
-    table.addEventListener("mousemove", (x) => colour_square(x))
+    table.addEventListener("mousemove", (x) => {
+        if (inProcess) return
+        colour_square(x)
+    })
+
     let grid = []
 
     function createBoard() {
@@ -274,15 +282,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("keypress", x => {
+        if (inProcess) return
         if (x.code == "Space" && start && end) {
             // change to refrence cell in grid array
-            A_Star(Cell(start), Cell(end))
+            A_Star(start, end)
         }
     })
 
     document.getElementById("start-btn").addEventListener("click", function() {
+        if (inProcess) return
         if (start && end) {
-            A_Star(Cell(start), Cell(end))
+            A_Star(start, end)
         }
     })
 
@@ -293,6 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("clear-btn").addEventListener("click", () => {
+        if (inProcess) return
         clear_board()
         createBoard()
     })
@@ -326,9 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let i=0; i < size; i++) {
             for (let j=0; j < size; j++) {
                 s = grid[i][j]
-                if (s.cell.classList.contains("start") || s.cell.classList.contains("end")) {
-                    continue
-                }
                 Math.floor(Math.random()*3) == 2 ? s.cell.classList.add("barrier") : null
             }
         }
@@ -338,12 +346,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     pattern_options.forEach(option => {
         option.addEventListener("click", (x) => {
+            if (inProcess) return
             switch(x.target.id) {
                 case 'r': {
+                    clear_board()
+                    createBoard()
                     generate_random_maze()
                     break
                 }
                 case 'b': {
+                    clear_board()
+                    createBoard()
                     recursive_backtracking_maze()
                     break
                 }
@@ -354,6 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let size_btn = document.querySelector("#size-btn")
     
     size_btn.addEventListener("click", () => {
+        if (inProcess) return
         let size_input = document.querySelector("#size-input").value
 
         if (size_input > 1) {

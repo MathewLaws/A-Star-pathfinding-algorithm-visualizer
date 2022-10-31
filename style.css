@@ -75,7 +75,8 @@ td.path{
     animation-duration: 1.0s;
     animation-fill-mode: forwards;
 }
-/* change colors, add linear gradients for all colours in the legend*/
+
+
 @keyframes barrier{
     0% {background-color: #a3a3a3; transform: scale(.5);}
     50% {background-color: #696969}
