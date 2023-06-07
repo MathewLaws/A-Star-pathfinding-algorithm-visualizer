@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let speed = 30
     let table = document.getElementById("table");
     let inProcess = false;
+    let algorithm = A_Star
 
     function heuristic(node, goal) {
         node_id = row_col(node.cell)
@@ -106,7 +107,76 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             if (speed > 0) setTimeout(nextIter, speed)
             else nextIter()
-        })();
+        }
+        )();
+
+        return -1
+    }
+
+    function dijkstras(start, goal) {
+        inProcess = true
+        let openSet = [start];
+        let closedSet = [];
+        let current = openSet[0];
+        let temp_current = 0;
+        let min;
+
+        allow_corners = allow_corners_input.checked;
+
+        openSet[0].f_score = 0;
+
+        (function nextIter() {
+            temp_current = 0
+            min = Number.POSITIVE_INFINITY
+            for (let i = 0; i < openSet.length; i++) {
+                if ((openSet[i].f_score < min) && openSet[i].cell.classList.contains("closed") == false) {
+                    temp_current = openSet[i]
+                    min = openSet[i].f_score
+                }
+            }
+
+            current = temp_current
+            current.cell.classList.add("open")
+
+            if (current.cell === goal.cell) {
+                
+                let path = []
+                path.push(current)
+                while (current.previous && current != start) {
+                    path.push(current.previous)
+                    current = current.previous
+                }
+
+                reveal_path(path)
+                
+                console.log("Done")
+                inProcess = false
+                return 1
+            }
+
+            for (let i=openSet.length-1; i >= 0; i--) {
+                if (openSet[i] == current) {
+                    openSet.splice(i, 1)
+                }
+            }
+
+            current.cell.classList.remove("open")
+            current.cell.classList.add("closed")
+
+            getNeighbors(current.cell).forEach(neighbor => {
+                temp_distance = current.f_score + 1
+
+                if ((temp_distance < neighbor.f_score) && !(neighbor in openSet) && !(neighbor in closedSet) && (neighbor.cell.classList.contains("barrier") == false)) {
+                        neighbor.f_score = temp_distance
+                        openSet.push(neighbor)
+                        neighbor.cell.classList.add("open")
+                        if (!(neighbor.previous)) neighbor.previous = current
+                }
+            })
+            if (speed > 0) setTimeout(nextIter, speed)
+            else nextIter()
+        }
+        )();
 
         return -1
     }
@@ -285,14 +355,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (inProcess) return
         if (x.code == "Space" && start && end) {
             // change to refrence cell in grid array
-            A_Star(start, end)
+            algorithm(start, end)
         }
     })
 
     document.getElementById("start-btn").addEventListener("click", function() {
         if (inProcess) return
         if (start && end) {
-            A_Star(start, end)
+            algorithm(start, end)
         }
     })
 
@@ -327,6 +397,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 case 'i': {
                     speed = 0
+                    break
+                }
+            }
+        })
+    })
+
+    let pathfinding_options = document.querySelectorAll(".pathfinding-option")
+
+    pathfinding_options.forEach(option => {
+        option.addEventListener("click", (x) => {
+            switch(x.target.id) {
+                case 'astar': {
+                    algorithm = A_Star
+                    break
+                }
+                case 'dijkstras': {
+                    algorithm = dijkstras
                     break
                 }
             }
